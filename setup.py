@@ -22,7 +22,7 @@ setup(
     # https://packaging.python.org/en/latest/single_source_version.html
     version='1.0.0.dev',
 
-    description='To manipulate xml',
+    description='Convert XML documents to dict and easily search for and retrieve the data they contain.',
     long_description=open('README.rst').read(),
 
     # The project's main homepage.
