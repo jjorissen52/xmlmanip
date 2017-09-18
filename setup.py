@@ -20,7 +20,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='1.0.1.dev',
+    version='1.1.0.dev',
 
     description='Convert XML documents to dict and easily search for and retrieve the data they contain.',
     long_description=open('README.rst').read(),
@@ -72,7 +72,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['xmltodict==0.11.0'],
+    install_requires=['xmltodict==0.11.0', 'bs4'],
 
     python_requires='>=3.6',
 )
