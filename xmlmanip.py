@@ -215,6 +215,7 @@ class XMLSchema(SchemaInnerDict):
 
         for element in elements_to_delete:
             element.getparent().remove(element)
+        self._re_init(ET.tostring(self.schema))
 
     def _to_dict(self):
         return xmltodict.parse((ET.tostring(self.schema)))
@@ -231,6 +232,10 @@ class XMLSchema(SchemaInnerDict):
     def __init__(self, schema):
         self.schema = ET.fromstring(schema)
         super(XMLSchema, self).__init__(self._to_dict())
+
+    def _re_init(self, schema):
+        self.__init__(schema)
+
 
 
 def inject_tags(schema, parent_tag="", injection_index=0, creative=True, **tags):
