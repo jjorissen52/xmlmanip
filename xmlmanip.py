@@ -173,12 +173,51 @@ class SchemaInnerDict(OrderedDict):
 
 
 class XMLSchema(SchemaInnerDict):
-    def is_valid_schema(self, schema):
-        root = ET.fromstring(schema)
-        print(root.tag, )
+    def search(self, schema_str="", show_all=True, **kwarg):
+        schema = XMLSchema(ET.tostring(self.schema))
+        paths = schema.locate(**kwarg)
+        items = [schema.retrieve('__'.join(path.split('__')[:-1])) for path in paths]
+        kwarg_key = list(kwarg.keys())[0].split('__')[0]
+        key_as_int = lambda key: int(key) if key.isdigit() else key
+        try:
+            sorted_list = sorted(items, key=lambda x: key_as_int(x[kwarg_key])) if show_all else \
+                sorted(items, key=lambda x: key_as_int(x[kwarg_key]))[-1]
+        except IndexError:  # happens when there are no results in the search
+            sorted_list = None
+            # happens when isdigit cannot be called because the search result is a SearchableList object
+        # TODO: make this return the right items please
+        except AttributeError:
+            sorted_list = items
+        return sorted_list
+
+    def delete_elements_where(self, multi=True, **kwarg):
+        schema = XMLSchema(ET.tostring(self.schema))
+        paths = schema.locate(**kwarg)
+        # ET cannot find() the root element by name; it always searches in root
+        remove_root = lambda x: '__'.join(x.split('__')[2:])
+        remove_tail = lambda x: '__'.join(x.split('__')[:-1])
+        not_last_in_list = lambda _list, index: index + 1 < len(_list)
+        next_is_digit = lambda _list, index: _list[index + 1].isdigit()
+        for i, path in enumerate(paths):
+            paths[i] = remove_tail(remove_root(path))
+        elements_to_delete = []
+        for path in paths:
+            current_element = self.schema
+            split_path = path.split('__')
+            for i, element_key in enumerate(split_path):
+                if element_key.isdigit():
+                    current_element = current_element[int(element_key)]
+                elif not_last_in_list(split_path, i) and next_is_digit(split_path, i):
+                    current_element = current_element.findall(element_key)
+                else:
+                    current_element = current_element.find(element_key)
+            elements_to_delete.append(current_element)
+
+        for element in elements_to_delete:
+            element.getparent().remove(element)
 
     def _to_dict(self):
-        return xmltodict.parse(self.original_string)
+        return xmltodict.parse((ET.tostring(self.schema)))
 
     def __getitem__(self, key):
         item = super(type(self), self).__getitem__(key)
@@ -190,7 +229,6 @@ class XMLSchema(SchemaInnerDict):
             return item
 
     def __init__(self, schema):
-        self.original_string = schema
         self.schema = ET.fromstring(schema)
         super(XMLSchema, self).__init__(self._to_dict())
 
