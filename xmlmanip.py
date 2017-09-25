@@ -256,7 +256,7 @@ def inject_tags(schema, parent_tag="", injection_index=0, creative=True, **tags)
     :return: modified xml_string with newly injected tags
     """
     # if the object is not an element, we treat it as an xml string
-    if not isinstance(schema, ET.Element):
+    if not isinstance(schema, ET.Element.__class__):
         schema = ET.fromstring(schema)
     # if no parent_tag is specified, the root is the parent
     if not parent_tag:
