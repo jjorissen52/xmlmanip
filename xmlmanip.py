@@ -4,7 +4,17 @@ from lxml import etree as ET
 from collections import OrderedDict
 from bs4 import BeautifulSoup
 
+
 def try_compare(obj, key, comparison, search_value, override_value=""):
+    """
+    Attempts a comparison between two objects, (either comparison(obj[key], search_value) or comparison(override_value, search_value) and if the comparison between the two objects is not implemented or the object does not contain the passed key, the comparison always returns false
+    :param obj: (object) object of comparison
+    :param key: (str) key of object in comparison
+    :param comparison: (str) type of comparison (__eq__, __ne__, __contains__, etc.)
+    :param search_value: (object) value compared to obj[key] or override value
+    :param override_value: (optional object) value compared to search_value in place of obj[key]
+    :return:
+    """
     value = override_value if override_value else obj[key]
     try:
         return getattr(value, comparison)(search_value)
@@ -23,7 +33,17 @@ class BadTagError(BaseException):
 
 
 class SearchableList(list):
+    """
+    A list that allows the dicts it contains to be searched.
+    """
     def search(self, *args, **kwargs):
+        """
+        Search the list for a certain value at the provided key.
+        :param args: (sometimes optional) arg[0] is the key to be searched, arg[1] is the search value desired
+        :param kwargs: (kwargs) keys describe the key to be searched and the comparison method implemented, value is the search value
+            * comparison
+        :return: (SearchableList) list of objects that meet the search criteria
+        """
         comparison = f"__{kwargs.get('comparison')}__" if kwargs.get('comparison') else '__eq__'
         try:
             key, value = args[0], args[1]
@@ -235,7 +255,6 @@ class XMLSchema(SchemaInnerDict):
 
     def _re_init(self, schema):
         self.__init__(schema)
-
 
 
 def inject_tags(schema, parent_tag="", injection_index=0, creative=True, **tags):
