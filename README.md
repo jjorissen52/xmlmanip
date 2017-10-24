@@ -1,7 +1,7 @@
 
 
 ```python
-from xmlmanip import XMLSchema
+from xmlmanip import XMLSchema, SearchableList
 ```
 
 
@@ -57,57 +57,82 @@ You can import your XML string to convert it to a dict. (dict conversion handled
 
 ```python
 schema = XMLSchema(string)
+schema
 ```
+
+
+
+
+    XMLSchema([('breakfast_menu',
+                OrderedDict([('food',
+                              [OrderedDict([('@tag', 'waffles'),
+                                            ('name', 'Belgian Waffles'),
+                                            ('price', '$5.95'),
+                                            ('description',
+                                             'Two of our famous Belgian Waffles with plenty of real maple syrup'),
+                                            ('calories', '650')]),
+                               OrderedDict([('@tag', 'waffles'),
+                                            ('name', 'Strawberry Belgian Waffles'),
+                                            ('price', '$7.95'),
+                                            ('description',
+                                             'Light Belgian waffles covered with strawberries and whipped cream'),
+                                            ('calories', '900')]),
+                               OrderedDict([('@tag', 'waffles'),
+                                            ('name',
+                                             'Berry-Berry Belgian Waffles'),
+                                            ('price', '$8.95'),
+                                            ('description',
+                                             'Belgian waffles covered with assorted fresh berries and whipped cream'),
+                                            ('calories', '900')]),
+                               OrderedDict([('@tag', 'toast'),
+                                            ('name', 'French Toast'),
+                                            ('price', '$4.50'),
+                                            ('description',
+                                             'Thick slices made from our homemade sourdough bread'),
+                                            ('calories', '600')]),
+                               OrderedDict([('@tag', 'classic'),
+                                            ('name', 'Homestyle Breakfast'),
+                                            ('price', '$6.95'),
+                                            ('description',
+                                             'Two eggs, bacon or sausage, toast, and our ever-popular hash browns'),
+                                            ('calories', '950')])])]))])
+
+
+
+Use .search() to search for data of interest.
 
 
 ```python
-print(schema)
+schema.search(name="Homestyle Breakfast")
 ```
 
-    {
-      "breakfast_menu": {
-        "food": [
-          {
-            "@tag": "waffles",
-            "name": "Belgian Waffles",
-            "price": "$5.95",
-            "description": "Two of our famous Belgian Waffles with plenty of real maple syrup",
-            "calories": "650"
-          },
-          {
-            "@tag": "waffles",
-            "name": "Strawberry Belgian Waffles",
-            "price": "$7.95",
-            "description": "Light Belgian waffles covered with strawberries and whipped cream",
-            "calories": "900"
-          },
-          {
-            "@tag": "waffles",
-            "name": "Berry-Berry Belgian Waffles",
-            "price": "$8.95",
-            "description": "Belgian waffles covered with assorted fresh berries and whipped cream",
-            "calories": "900"
-          },
-          {
-            "@tag": "toast",
-            "name": "French Toast",
-            "price": "$4.50",
-            "description": "Thick slices made from our homemade sourdough bread",
-            "calories": "600"
-          },
-          {
-            "@tag": "classic",
-            "name": "Homestyle Breakfast",
-            "price": "$6.95",
-            "description": "Two eggs, bacon or sausage, toast, and our ever-popular hash browns",
-            "calories": "950"
-          }
-        ]
-      }
-    }
 
 
-Use .locate() and .retrieve() to find and retrieve your data of interest.
+
+    [SchemaInnerDict([('@tag', 'classic'),
+                      ('name', 'Homestyle Breakfast'),
+                      ('price', '$6.95'),
+                      ('description',
+                       'Two eggs, bacon or sausage, toast, and our ever-popular hash browns'),
+                      ('calories', '950')])]
+
+
+
+The `SearchAbleList` class will also allow you to easily search through lists of dicts.
+
+
+```python
+example_list = [{"thing": 1, "other_thing": 2}, {"thing": 2, "other_thing": 2}]
+searchable_list = SearchableList(example_list)
+print(searchable_list.search(thing__ne=2)) # thing != 2
+print(searchable_list.search(other_thing=2))
+```
+
+    [{'thing': 1, 'other_thing': 2}]
+    [{'thing': 1, 'other_thing': 2}, {'thing': 2, 'other_thing': 2}]
+
+
+Use .locate() if you are interested in the "path" to your data of interest and .retrieve() to get an object from its "path."
 
 
 ```python
@@ -169,40 +194,61 @@ paths
 
 
 ```python
-[schema.retrieve(path) for path in paths]
+schema.search(name__contains="Waffles")
 ```
 
 
 
 
-    ['Belgian Waffles',
-     'Strawberry Belgian Waffles',
-     'Berry-Berry Belgian Waffles']
+    [SchemaInnerDict([('@tag', 'waffles'),
+                      ('name', 'Belgian Waffles'),
+                      ('price', '$5.95'),
+                      ('description',
+                       'Two of our famous Belgian Waffles with plenty of real maple syrup'),
+                      ('calories', '650')]),
+     SchemaInnerDict([('@tag', 'waffles'),
+                      ('name', 'Berry-Berry Belgian Waffles'),
+                      ('price', '$8.95'),
+                      ('description',
+                       'Belgian waffles covered with assorted fresh berries and whipped cream'),
+                      ('calories', '900')]),
+     SchemaInnerDict([('@tag', 'waffles'),
+                      ('name', 'Strawberry Belgian Waffles'),
+                      ('price', '$7.95'),
+                      ('description',
+                       'Light Belgian waffles covered with strawberries and whipped cream'),
+                      ('calories', '900')])]
 
 
 
 
 ```python
-paths = schema.locate(calories__lt="700") 
+schema.search(calories__lt="700")
 ```
 
 
+
+
+    [SchemaInnerDict([('@tag', 'toast'),
+                      ('name', 'French Toast'),
+                      ('price', '$4.50'),
+                      ('description',
+                       'Thick slices made from our homemade sourdough bread'),
+                      ('calories', '600')]),
+     SchemaInnerDict([('@tag', 'waffles'),
+                      ('name', 'Belgian Waffles'),
+                      ('price', '$5.95'),
+                      ('description',
+                       'Two of our famous Belgian Waffles with plenty of real maple syrup'),
+                      ('calories', '650')])]
+
+
+
+##### Warning, all types are compared as strings, which may have undesirable results. 
+
+
 ```python
-[schema.retrieve(path) for path in paths]
-```
-
-
-
-
-    ['650', '600']
-
-
-
-##### Warning, all types are compared as strings, which may have undesirable results. A fix for this problem is coming.
-
-
-```python
-schema.locate(calories__lt="700") == schema.locate(calories__lt="70") 
+schema.search(calories__lt="700") == schema.search(calories__lt="70") 
 ```
 
 
@@ -216,13 +262,13 @@ Some attributes cannot be accessed via keyword arguements, unfortunately.
 
 
 ```python
-schema.retrieve(@tag__ne="waffles")
+schema.search(@tag__ne="waffles")
 ```
 
 
-      File "<ipython-input-21-c070fc7f6462>", line 1
-        schema.retrieve(@tag__ne="waffles")
-                        ^
+      File "<ipython-input-13-da95e3095c41>", line 1
+        schema.search(@tag__ne="waffles")
+                      ^
     SyntaxError: invalid syntax
 
 
@@ -231,28 +277,57 @@ You will need to pass the desired attribute and comparison method as strings in 
 
 
 ```python
-schema.locate('@tag', 'waffles') # default comparison is __eq__
+schema.search('@tag', 'waffles') # default comparison is __eq__
 ```
 
 
 
 
-    ['__breakfast_menu__food__0__@tag',
-     '__breakfast_menu__food__1__@tag',
-     '__breakfast_menu__food__2__@tag']
+    [SchemaInnerDict([('@tag', 'waffles'),
+                      ('name', 'Belgian Waffles'),
+                      ('price', '$5.95'),
+                      ('description',
+                       'Two of our famous Belgian Waffles with plenty of real maple syrup'),
+                      ('calories', '650')]),
+     SchemaInnerDict([('@tag', 'waffles'),
+                      ('name', 'Strawberry Belgian Waffles'),
+                      ('price', '$7.95'),
+                      ('description',
+                       'Light Belgian waffles covered with strawberries and whipped cream'),
+                      ('calories', '900')]),
+     SchemaInnerDict([('@tag', 'waffles'),
+                      ('name', 'Berry-Berry Belgian Waffles'),
+                      ('price', '$8.95'),
+                      ('description',
+                       'Belgian waffles covered with assorted fresh berries and whipped cream'),
+                      ('calories', '900')])]
 
 
 
 
 ```python
-schema.locate('@tag', 'waffles', comparison='ne')
+schema.search('@tag', 'waffles', comparison='ne')
 ```
 
 
 
 
-    ['__breakfast_menu__food__3__@tag', '__breakfast_menu__food__4__@tag']
+    [SchemaInnerDict([('@tag', 'classic'),
+                      ('name', 'Homestyle Breakfast'),
+                      ('price', '$6.95'),
+                      ('description',
+                       'Two eggs, bacon or sausage, toast, and our ever-popular hash browns'),
+                      ('calories', '950')]),
+     SchemaInnerDict([('@tag', 'toast'),
+                      ('name', 'French Toast'),
+                      ('price', '$4.50'),
+                      ('description',
+                       'Thick slices made from our homemade sourdough bread'),
+                      ('calories', '600')])]
 
 
 
-That's it so far.
+
+```python
+
+```
