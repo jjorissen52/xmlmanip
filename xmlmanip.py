@@ -193,11 +193,13 @@ class SchemaInnerDict(OrderedDict):
 
 
 class XMLSchema(SchemaInnerDict):
-    def search(self, schema_str="", show_all=True, **kwarg):
+    def search(self, *args, schema_str="", show_all=True, **kwarg):
         schema = XMLSchema(ET.tostring(self.schema))
-        paths = schema.locate(**kwarg)
+        paths = schema.locate(*args, **kwarg)
         items = [schema.retrieve('__'.join(path.split('__')[:-1])) for path in paths]
-        kwarg_key = list(kwarg.keys())[0].split('__')[0]
+        comparison = f"__{kwarg.pop('comparison')}__" if kwarg.get('comparison') else '__eq__' # just getting it out
+        kwarg_key = list(kwarg.keys())[0].split('__')[0] if kwarg.keys() else args[0]
+        # kwarg_key = list(kwarg.keys())[0].split('__')[0]
         key_as_int = lambda key: int(key) if key.isdigit() else key
         try:
             sorted_list = sorted(items, key=lambda x: key_as_int(x[kwarg_key])) if show_all else \
