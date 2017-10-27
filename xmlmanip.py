@@ -44,30 +44,35 @@ class SearchableList(list):
             * comparison
         :return: (SearchableList) list of objects that meet the search criteria
         """
-        comparison = f"__{kwargs.get('comparison')}__" if kwargs.get('comparison') else '__eq__'
+        # comparison = f"__{kwargs.get('comparison')}__" if kwargs.get('comparison') else '__eq__'
+        comparison = '__{comparison}__'.format(comparison=kwargs.get('comparison')) if kwargs.get('comparison') else '__eq__'
         try:
             key, value = args[0], args[1]
         except IndexError:
             for key in kwargs.keys():
                 if '__' in key:
-                    comparison = f'__{key.split("__")[1]}__'
+                    # comparison = f'__{key.split("__")[1]}__'
+                    comparison = '__{comparison}__'.format(comparison=key.split("__")[1])
                 key, value = key.split("__")[0], kwargs[key]
         return SearchableList(list(filter(lambda x: try_compare(x, key, comparison, value), self)))
 
     def _locate(self, *args, path_string="", paths=None, **kwargs):
-        comparison = f"__{kwargs.get('comparison')}__" if kwargs.get('comparison') else '__eq__'
+        # comparison = f"__{kwargs.get('comparison')}__" if kwargs.get('comparison') else '__eq__'
+        comparison = "__{comparison}__".format(comparison=kwargs.get('comparison')) if kwargs.get('comparison') else '__eq__'
         try:
             search_key, search_value = args[0], args[1]
         except IndexError:
             for key in kwargs.keys():
                 if '__' in key:
-                    comparison = f'__{key.split("__")[1]}__'
+                    # comparison = f'__{key.split("__")[1]}__'
+                    comparison = '__{comparison}__'.format(comparison=key.split("__")[1])
                 search_key, search_value = key.split("__")[0], kwargs[key]
 
         for i in range(len(self)):
             if issubclass(type(self[i]), dict):
                 for key, value in self[i].items():
-                    new_path_string = f'{path_string}__{i}__{key}'
+                    # new_path_string = f'{path_string}__{i}__{key}'
+                    new_path_string = '{path_string}__{i}__{key}'.format(path_string=path_string, i=i, key=key)
                     if key == search_key:
                         if isinstance(value, str) and isinstance(search_value, str):
                             value, search_value = value.upper(), search_value.upper()
@@ -94,9 +99,9 @@ class SearchableList(list):
                     try:
                         new_obj = retrieval_method(int(current_key))
                     except ValueError:
-                        raise ValueError(f'_retrieve expected an int as an index to a list,'
-                                         f' got str "{current_key}" instead. Are you sure your key path is'
-                                         'valid?')
+                        raise ValueError('_retrieve expected an int as an index to a list, got str "{current_key}" '
+                                         'instead. Are you sure your key path is valid?'.format(current_key=current_key)
+                                         )
                 else:
                     new_obj = retrieval_method(current_key)
                 return self._retrieve(new_obj, keys)
@@ -124,17 +129,20 @@ class SchemaInnerDict(OrderedDict):
         """
         modifies the list "paths" to be returned via the "locate" method
         """
-        comparison = f"__{kwargs.get('comparison')}__" if kwargs.get('comparison') else '__eq__'
+        # comparison = f"__{kwargs.get('comparison')}__" if kwargs.get('comparison') else '__eq__'
+        comparison = "__{comparison}__".format(comparison=kwargs.get('comparison')) if kwargs.get('comparison') else '__eq__'
         try:
             search_key, search_value = args[0], args[1]
         except IndexError:
             for key in kwargs.keys():
                 if '__' in key:
-                    comparison = f'__{key.split("__")[1]}__'
+                    # comparison = f'__{key.split("__")[1]}__'
+                    comparison = '__{comparison}__'.format(comparison=key.split("__")[1])
                 search_key, search_value = key.split("__")[0], kwargs[key]
 
         for key, value in self.items():
-            new_path_string = f'{path_string}__{key}'
+            # new_path_string = f'{path_string}__{key}'
+            new_path_string = '{path_string}__{key}'.format(path_string=path_string, key=key)
             if key == search_key:
                 if isinstance(value, str) and isinstance(search_value, str):
                     value, search_value = value.upper(), search_value.upper()
@@ -161,9 +169,9 @@ class SchemaInnerDict(OrderedDict):
                     try:
                         new_obj = retrieval_method(int(current_key))
                     except ValueError:
-                        raise ValueError(f'_retrieve expected an int as an index to a list,'
-                                         f' got str "{current_key}" instead. Are you sure your key path is'
-                                         'valid?')
+                        raise ValueError('_retrieve expected an int as an index to a list, got str "{current_key}" '
+                                         'instead. Are you sure your key path is valid?'.format(current_key=current_key)
+                                         )
                 else:
                     new_obj = retrieval_method(current_key)
                 return self._retrieve(new_obj, keys)
@@ -180,7 +188,7 @@ class SchemaInnerDict(OrderedDict):
         return json.dumps(self, indent=2)
 
     def __str__(self):
-        return f'{self.to_json()}'
+        return str(self.to_json())
 
     def __getitem__(self, key):
         item = super(SchemaInnerDict, self).__getitem__(key)
@@ -197,7 +205,8 @@ class XMLSchema(SchemaInnerDict):
         schema = XMLSchema(ET.tostring(self.schema))
         paths = schema.locate(*args, **kwarg)
         items = [schema.retrieve('__'.join(path.split('__')[:-1])) for path in paths]
-        comparison = f"__{kwarg.pop('comparison')}__" if kwarg.get('comparison') else '__eq__' # just getting it out
+        # comparison = f"__{kwarg.pop('comparison')}__" if kwarg.get('comparison') else '__eq__' # just getting it out
+        comparison = "__{comparison}__".format(comparison=kwarg.pop('comparison')) if kwarg.get('comparison') else '__eq__' # just getting it out
         kwarg_key = list(kwarg.keys())[0].split('__')[0] if kwarg.keys() else args[0]
         # kwarg_key = list(kwarg.keys())[0].split('__')[0]
         key_as_int = lambda key: int(key) if key.isdigit() else key
@@ -289,7 +298,8 @@ def inject_tags(schema, parent_tag="", injection_index=0, creative=True, **tags)
     elif schema.find(parent_tag) is not None:
         parent = schema.find(parent_tag)
     else:
-        raise BadSchemaError(f"No <{parent_tag}/> tag included in the given schema.")
+        # raise BadSchemaError(f"No <{parent_tag}/> tag included in the given schema.")
+        raise BadSchemaError("No <{parent_tag}/> tag included in the given schema.".format(parent_tag=parent_tag))
     for i, kword in enumerate(tags.keys()):
         # if creative then add a new tag on tag collision, if not creative then pass
         if parent.find(kword) is not None and not creative:
@@ -314,7 +324,9 @@ def inject_tags(schema, parent_tag="", injection_index=0, creative=True, **tags)
                 text = tags[kword]
                 new_tag = ET.Element(kword.split('__')[0])
             else:
-                raise TypeError(f"Passed kwarg '{kword} is {type(tags[kword])}. Must be str or dict.'")
+                # raise TypeError(f"Passed kwarg '{kword} is {type(tags[kword])}. Must be str or dict.'")
+                raise TypeError("Passed kwarg '{kword} is {kword_type}. Must be str or dict.'".format(kword=kword,
+                                                                                                      kword_type=type(tags[kword])))
             new_tag.text = text
             parent.insert(injection_index, new_tag)
             if inner_tag:
@@ -323,7 +335,8 @@ def inject_tags(schema, parent_tag="", injection_index=0, creative=True, **tags)
     try:
         schema_str = ET.tostring(schema)
     except TypeError as e:
-        raise TypeError(f"One of tags you attempted to inject is not a supported type: {e}")
+        # raise TypeError(f"One of tags you attempted to inject is not a supported type: {e}")
+        raise TypeError("One of tags you attempted to inject is not a supported type: {e}".format(e=e))
 
     return schema_str
 
