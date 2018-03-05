@@ -1,4 +1,5 @@
 import xmltodict, json
+import logging
 from lxml import etree as ET
 
 from collections import OrderedDict
@@ -20,8 +21,8 @@ def try_compare(obj, key, comparison, search_value, override_value=""):
         return getattr(value, comparison)(search_value)
     except KeyError:
         return False
-    except NotImplemented:
-        return False
+    except Exception as e:
+        logging.warning('The following exception was ignored in {0}: {1}'.format(try_compare.__name__, e))
 
 
 class BadSchemaError(BaseException):

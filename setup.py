@@ -20,7 +20,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='1.1.7.dev',
+    version='1.1.8.dev',
 
     description='Convert XML documents to dict and easily search for and retrieve the data they contain.',
     long_description=open('README.rst').read(),
